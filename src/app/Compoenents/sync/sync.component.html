@@ -1,0 +1,154 @@
+<div class="container"> 
+    <div class="mt-5 d-flex align-content-center justify-content-between w-100">
+        <div class="inputs">
+            <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="Search">
+        </div>
+
+        <div class="add">
+            <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="callGet()">
+                Add
+            </button>
+        </div>
+    </div>
+
+    <div class="dataShow mt-5">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Label Sync</th>
+                    <th>Created On</th>
+                    <th>Label Source</th>
+                    <th>Label Meilisync</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of syncData; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ item.label }}</td>
+                    <td>{{ item.meiliSearch.label }}</td>
+                    <td>{{ item.source.label  }}</td>
+                    <td>{{ item.createdOn | date: 'yyyy-MM-dd' }}</td>
+                    <td>
+                        <button class="btn"  (click)="editMelie(item.id)" data-bs-toggle="modal" data-bs-target="#exampleModal2" >
+                            <i class="fa-solid fa-pen-to-square mx-5"></i>
+                        </button>
+                        <button class="btn" (click)="deleteaync(item.id)">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination controls -->
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                    <button class="page-link" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+                </li>
+                <li class="page-item" *ngFor="let page of totalPagesArray">
+                    <button class="page-link" (click)="changePage(page)" [class.active]="currentPage === page">{{ page }}</button>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                    <button class="page-link" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Modal for Adding -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Add MeiliSearch</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="syncForm" (ngSubmit)="addMeili()">
+            <div class="mb-3">
+              <label for="label" class="col-form-label">Label</label>
+              <input type="text" class="form-control" formControlName="label" placeholder="Enter label" id="label">
+            </div>
+  
+            <!-- MeiliSearch Dropdown -->
+            <div class="form-group my-5">
+              <label for="meiliSearchDropdown">Select MeiliSearch</label>
+              <select class="form-control" formControlName="meiliSearchId" id="meiliSearchDropdown">
+                <option value="">Select a MeiliSearch</option>
+                <option *ngFor="let meiliSearch of meiliData" [value]="meiliSearch.id">{{ meiliSearch.label }}</option>
+              </select>
+            </div>
+  
+            <!-- Source Dropdown -->
+            <div class="form-group">
+              <label for="sourceDropdown">Select Source</label>
+              <select class="form-control" formControlName="sourceId" id="sourceDropdown">
+                <option value="">Select a Source</option>
+                <option *ngFor="let source of sourceData" [value]="source.id">{{ source.label }}</option>
+              </select>
+            </div>
+  
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Add Meili</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+<!-- Edit for Sync  -->
+
+
+
+<!-- Modal for Editing -->
+<div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel2">Edit MeiliSearch</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="updateMelie()" [formGroup]="editmelie">
+            <div class="mb-3">
+              <label for="label" class="col-form-label">Label</label>
+              <input type="text" class="form-control" formControlName="label" placeholder="Enter label" id="label">
+            </div>
+
+
+            <!-- MeiliSearch Dropdown -->
+            <div class="form-group my-5">
+                <label for="meiliSearchDropdown">Select MeiliSearch</label>
+                <select class="form-control" formControlName="meiliSearchId" id="meiliSearchDropdown">
+                <option value="">Select a MeiliSearch</option>
+                <option *ngFor="let meiliSearch of meiliData" [value]="meiliSearch.id">{{ meiliSearch.label }}</option>
+                </select>
+            </div>
+    
+            <!-- Source Dropdown -->
+            <div class="form-group">
+                <label for="sourceDropdown">Select Source</label>
+                <select class="form-control" formControlName="sourceId" id="sourceDropdown">
+                <option value="">Select a Source</option>
+                <option *ngFor="let source of sourceData" [value]="source.id">{{ source.label }}</option>
+                </select>
+            </div>
+    
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Update Meili</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
