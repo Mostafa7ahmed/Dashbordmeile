@@ -26,6 +26,8 @@ export class SourceComponent implements OnInit {
     this.sourceForm = new FormGroup({
       label: new FormControl('', Validators.required),
       url: new FormControl('', Validators.required),
+      database: new FormControl('', Validators.required),
+
       type: new FormControl(0),
     });
 
@@ -33,6 +35,8 @@ export class SourceComponent implements OnInit {
     this.editsource = new FormGroup({
       id: new FormControl(''),
       label: new FormControl('', Validators.required),
+      database: new FormControl('', Validators.required),
+
       url: new FormControl('', Validators.required),
       type: new FormControl(0),
     });

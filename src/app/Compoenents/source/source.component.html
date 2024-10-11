@@ -18,15 +18,18 @@
           <th>ID</th>
           <th>Label</th>
           <th>URL</th>
+          <th>database</th>
+
           <th>Created On</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of meiliData; let i = index">
-          <td>{{ i + 1 }}</td>
           <td>{{ item.label }}</td>
           <td>{{ item.url }}</td>
+          <td>{{ item.database }}</td>
+
           <td>{{ item.createdOn | date: 'yyyy-MM-dd' }}</td>
           <td>
             <button class="btn" (click)="editSource(item.id)"  data-bs-toggle="modal" data-bs-target="#editmodel">
@@ -75,6 +78,10 @@
             <label for="url" class="col-form-label">URL</label>
             <input type="text" class="form-control" formControlName="url" placeholder="Enter URL" id="url">
           </div>
+          <div class="mb-3">
+            <label for="url" class="col-form-label">database</label>
+            <input type="text" class="form-control" formControlName="database" placeholder="Enter database" id="database">
+          </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Add Source</button>
@@ -104,6 +111,10 @@
           <div class="mb-3">
             <label for="url" class="col-form-label">URL</label>
             <input type="text" class="form-control" formControlName="url" placeholder="Enter URL" id="url">
+          </div>
+          <div class="mb-3">
+            <label for="url" class="col-form-label">database</label>
+            <input type="text" class="form-control" formControlName="database" placeholder="Enter database" id="database">
           </div>
    
           <div class="modal-footer">
