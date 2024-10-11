@@ -136,7 +136,7 @@ export class MeilisearchComponent implements OnInit, OnDestroy {
           this.meiliData[index] = data;
         }
       } else if (operationType === 2) {
-        this.meiliData = this.meiliData.filter(item => item.id !== data.id); 
+        this.meiliData = this.meiliData.filter(item => item.id !== data); 
       }
     });
   }

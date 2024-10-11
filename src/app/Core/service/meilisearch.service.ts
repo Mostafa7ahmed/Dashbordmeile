@@ -40,7 +40,7 @@ export class MeilisearchService {
 
   public startConnection(): void {
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('https://meilisync.runasp.net/fast-meili-sync-hub', { withCredentials: false }) // Replace with your SignalR hub URL
+      .withUrl('https://meilisync.runasp.net/fast-meili-sync-hub', { withCredentials: false }) 
       .build();
 
     this.hubConnection
