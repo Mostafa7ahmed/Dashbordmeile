@@ -1,159 +1,178 @@
 import { CommonModule } from '@angular/common';
 import { MeilisearchService } from './../../Core/service/meilisearch.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Meilisearch } from '../../Core/interface/meilisearch';
+import { SiganlRService } from '../../Core/service/siganl-r.service';
 
 declare var bootstrap: any; // Access Bootstrap modal methods
 
 @Component({
   selector: 'app-meilisearch',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './meilisearch.component.html',
   styleUrls: ['./meilisearch.component.scss'],
 })
 export class MeilisearchComponent implements OnInit, OnDestroy {
-  meiliData: any[] = [];
-  currentPage = 1;
-  totalPages = 1;
+  meiliData: Meilisearch[] = [];
+  currentPage :number  = 1;
+  totalPages  :number = 1;
+  movenext:boolean=false;
+  movePrevious:boolean=false;
+
   totalPagesArray: number[] = [];
   unsub: any;
-  pageSize = 50;
+  pageSize:number = 5;
+  search :string= '';
+  meilForm = this.createFormGroup();
+  editmelie = this.createEditFormGroup();
 
-  meilForm = new FormGroup({
-    label: new FormControl(null, Validators.required),
-    url: new FormControl(null, Validators.required),
-    apiKey: new FormControl(null, Validators.required),
-  });
+  constructor(private meilisearchService: MeilisearchService, private signalR: SiganlRService) {}
 
-  editmelie = new FormGroup({
-    id: new FormControl(''),
-    label: new FormControl('', Validators.required),
-    url: new FormControl('', Validators.required),
-    apiKey: new FormControl('', Validators.required),
-  });
-
-  constructor(private _MeilisearchService: MeilisearchService) {}
-
-  getData(pageNumber: number = 1, pageSize: number = 40) {
-    this.unsub = this._MeilisearchService.getAll(pageNumber, pageSize).subscribe({
-      next: (res) => {
-        console.log(res)
-        this.meiliData = res.items;
-        this.currentPage = res.currentPage;
-        this.totalPages = res.totalPages;
-        this.totalPagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
-      },
-      error: (err) => {
-        console.error('Error fetching data:', err);
-      },
+  private createFormGroup(): FormGroup {
+    return new FormGroup({
+      label: new FormControl(null, Validators.required),
+      url: new FormControl(null, Validators.required),
+      apiKey: new FormControl(null, Validators.required),
     });
   }
 
-  editMelie(id: string) {
-    this._MeilisearchService.getMeileById(id).subscribe({
-      next: (res) => {
-        this.editmelie = new FormGroup({
-          id: new FormControl(res.result.id),
-          label: new FormControl(res.result.label, Validators.required),
-          url: new FormControl(res.result.url, Validators.required),
-          apiKey: new FormControl(res.result.apiKey, Validators.required),
-        });
-      },
-      error: (err) => {
-        console.error('Error fetching data for edit:', err);
-      },
+  private createEditFormGroup(): FormGroup {
+    return new FormGroup({
+      id: new FormControl(''),
+      label: new FormControl('', Validators.required),
+      url: new FormControl('', Validators.required),
+      apiKey: new FormControl('', Validators.required),
+    });
+  }
+
+  ngOnInit(): void {
+    this.getData();
+    this.setupSignalRConnection();
+  }
+
+  private setupSignalRConnection(): void {
+    this.signalR.startConnection();
+    this.signalR.addListener("NotifyMeiliSearchAsync",(operationType, response) => {
+      this.handleSignalRNotification(operationType, response.result);
+    });
+  }
+
+  private handleSignalRNotification(operationType: number, data: Meilisearch): void {
+    switch (operationType) {
+      case 0: // Add
+        this.meiliData.push(data);
+        break;
+      case 1: // Update
+        const index = this.meiliData.findIndex(item => item.id === data.id);
+        if (index !== -1) {
+          this.meiliData[index] = data;
+        }
+        break;
+      case 2: // Delete
+        this.meiliData = this.meiliData.filter(item => item.id !== data.id);
+        break;
+      default:
+        console.warn('Unknown operation type:', operationType);
+    }
+  }
+
+  getData(page: number = this.currentPage): void {
+    this.unsub = this.meilisearchService.getAll(page, this.pageSize, this.search).subscribe({
+      next: res => this.handleGetDataSuccess(res),
+      error: err => console.error('Error fetching data:', err),
+    });
+  }
+
+  private handleGetDataSuccess(res: { items: Meilisearch[], currentPage: number, totalPages: number , moveNext:boolean, movePrevious:boolean}): void {
+    this.meiliData = res.items;
+    this.currentPage = res.currentPage;
+    this.totalPages = res.totalPages;
+    this.movenext= res.moveNext;
+    this.movePrevious=res.movePrevious
+    this.totalPagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  editMelie(id: string): void {
+    this.meilisearchService.getMelieById(id).subscribe({
+      next: res => this.populateEditForm(res.result),
+      error: err => console.error('Error fetching data for edit:', err),
+    });
+  }
+
+  private populateEditForm(data: Meilisearch): void {
+    this.editmelie.setValue({
+      id: data.id,
+      label: data.label,
+      url: data.url,
+      apiKey: data.apiKey,
     });
   }
 
   updateMelie(): void {
     if (this.editmelie.valid) {
-      this._MeilisearchService.updateMelie(this.editmelie.value).subscribe({
-        next: (res) => {
-          const index = this.meiliData.findIndex(item => item.id === res.id);
-          if (index !== -1) {
-            this.meiliData[index] = res; 
-          }
-          this.closeModal('#exampleModal2'); 
-          console.log('Edit Done > ', res);
-
-        },
-        error: (err) => {
-          console.error('Error updating item:', err);
-        },
+      this.meilisearchService.updateMelie(this.editmelie.value).subscribe({
+        next: res => this.handleUpdateSuccess(res),
+        error: err => console.error('Error updating item:', err),
       });
     }
   }
 
-  addMeili(data: FormGroup) {
+  private handleUpdateSuccess(res: Meilisearch): void {
+    const index = this.meiliData.findIndex(item => item.id === res.id);
+    if (index !== -1) {
+      this.meiliData[index] = res;
+    }
+    this.closeModal('#exampleModal2');
+    console.log('Edit Done > ', res);
+  }
+
+  addMeili(data: FormGroup): void {
     if (data.valid) {
-      this._MeilisearchService.addMeile(data.value).subscribe({
-        next: (res) => {
-          console.log('Added Done > ', res);
-          this.closeModal('#exampleModal'); 
-     
-          data.reset(); 
-        },
-        error: (err) => {
-          console.error('Error:', err);
-        },
+      this.meilisearchService.addMelie(data.value).subscribe({
+        next: res => this.handleAddSuccess(res, data),
+        error: err => console.error('Error adding item:', err),
       });
     }
   }
 
-  deleteMeili(id: string) {
-    this._MeilisearchService.deleteMeile(id).subscribe({
-      next: (res) => {
+  private handleAddSuccess(res: Meilisearch, data: FormGroup): void {
+    console.log('Added Done > ', res);
+    this.closeModal('#exampleModal');
+    data.reset();
+  }
+
+  deleteMeili(id: string): void {
+    this.meilisearchService.deleteMelie(id).subscribe({
+      next: res => {
         this.meiliData = this.meiliData.filter(item => item.id !== id);
         console.log('Item deleted:', res);
       },
-      error: (err) => {
-        console.error('Error deleting item:', err);
-      },
+      error: err => console.error('Error deleting item:', err),
     });
   }
 
-  changePage(page: number) {
+  changePage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.getData(page);
     }
   }
 
-  ngOnInit(): void {
-    this.getData();
-    this._MeilisearchService.startConnection();
-  
-    this._MeilisearchService.addTransferDataListener((operationType, response) => {
-      console.log('Received notification:', response);
-      
-      const data = response.result;
-  
-      if (operationType === 0) { 
-        this.meiliData.push(data);
-      } else if (operationType === 1) {
-        const index = this.meiliData.findIndex(item => item.id === data.id);
-        if (index !== -1) {
-          this.meiliData[index] = data;
-        }
-      } else if (operationType === 2) {
-        this.meiliData = this.meiliData.filter(item => item.id !== data); 
-      }
-    });
+  searchMeili(): void {
+    this.currentPage = 1;
+    this.getData(this.currentPage); 
   }
-
 
   ngOnDestroy(): void {
     this.unsub?.unsubscribe();
-    this._MeilisearchService.stopConnection();
+    this.signalR.stopConnection();
   }
-
-
 
   // Close the modal
-  closeModal(idModel: string) {
+  closeModal(idModel: string): void {
     const modalElement = document.querySelector(idModel);
     const modal = bootstrap.Modal.getInstance(modalElement);
-    modal.hide();
+    modal?.hide();
   }
-
 }

@@ -1,9 +1,9 @@
-
-export interface Meilisearch {
+export interface Source {
     id: string;          
     label: string;        
-    apiKey: string;   
+    database: string;   
     url: string;        
     createdOn: string;  
-  }
-  
+    type:number
+}
+

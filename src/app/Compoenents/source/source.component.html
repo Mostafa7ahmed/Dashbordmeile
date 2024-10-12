@@ -1,11 +1,15 @@
 <div class="container">
   <div class="mt-5 d-flex align-content-center justify-content-between w-100">
     <div class="inputs">
-      <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="Search">
-    </div>
+    <input 
+        type="text" 
+        [(ngModel)]="search" 
+        (input)="searchMeili()" 
+        placeholder="Search..." 
+      />    </div>
 
     <div class="add">
-      <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#addModal">
+      <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#addSourceModal">
         Add
       </button>
     </div>
@@ -15,7 +19,6 @@
     <table class="table table-bordered">
       <thead>
         <tr>
-          <th>ID</th>
           <th>Label</th>
           <th>URL</th>
           <th>database</th>
@@ -32,7 +35,7 @@
 
           <td>{{ item.createdOn | date: 'yyyy-MM-dd' }}</td>
           <td>
-            <button class="btn" (click)="editSource(item.id)"  data-bs-toggle="modal" data-bs-target="#editmodel">
+            <button class="btn" (click)="editSource(item.id)"  data-bs-toggle="modal" data-bs-target="#editSource">
               <i class="fa-solid fa-pen-to-square mx-5"></i>
             </button>
             <button class="btn" (click)="deleteMeili(item.id)">
@@ -46,14 +49,14 @@
     <!-- Pagination controls -->
     <nav aria-label="Page navigation example">
       <ul class="pagination justify-content-center">
-        <li class="page-item" [class.disabled]="currentPage === 1">
-          <button class="page-link" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+        <li class="page-item" [class.disabled]="!movePrevious">
+          <button class="page-link" (click)="changePage(currentPage - 1)" [disabled]="!movePrevious">Previous</button>
         </li>
         <li class="page-item" *ngFor="let page of totalPagesArray">
           <button class="page-link" (click)="changePage(page)" [class.active]="currentPage === page">{{ page }}</button>
         </li>
-        <li class="page-item" [class.disabled]="currentPage === totalPages">
-          <button class="page-link" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+        <li class="page-item" [class.disabled]="!movenext">
+          <button class="page-link" (click)="changePage(currentPage + 1)" [disabled]="!movenext">Next</button>
         </li>
       </ul>
     </nav>
@@ -61,7 +64,7 @@
 </div>
 
 <!-- Modal for Adding -->
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+<div class="modal fade" id="addSourceModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -95,7 +98,7 @@
 <!-- Modal for Editing -->
 
 
-<div class="modal fade" id="editmodel" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+<div class="modal fade" id="editSource" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">

@@ -3,6 +3,9 @@ import { GlobalAPiService } from './global-api.service';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
+import { GenericService } from './generic.service';
+import { environment } from '../../../Environment/environment';
+import { Meilisearch } from '../interface/meilisearch';
 
 @Injectable({
   providedIn: 'root'
@@ -10,57 +13,31 @@ import * as signalR from '@microsoft/signalr';
 export class MeilisearchService {
   private hubConnection!: signalR.HubConnection;
 
-  constructor(private Url: GlobalAPiService, private _HttpClient: HttpClient) { }
+  private MelieUrl: string;
 
-  getAll(numpage: number = 1, pageSize: number = 50): Observable<any> {
-    return this._HttpClient.get(`${this.Url.baseUrl}${this.Url.meilisearchRoute}/paginate?pageNumber=${numpage}&pageSize=${pageSize}`);
+  constructor( private http: HttpClient) {
+    this.MelieUrl = `${environment.baseUrl}${environment.meilisearchRoute}`;
   }
 
-  getMeileById(melieId: string): Observable<any> {
-    return this._HttpClient.get(`${this.Url.baseUrl}${this.Url.meilisearchRoute}?id=${melieId}`);
+  getAll(numpage: number = 1, pageSize: number = 10 ,search:string): Observable<any> {
+    return new GenericService<Meilisearch>(this.http).getAll(this.MelieUrl, numpage, pageSize, search);
   }
 
-  deleteMeile(melieId: string): Observable<any> {
-    return this._HttpClient.delete(`${this.Url.baseUrl}${this.Url.meilisearchRoute}?id=${melieId}`);
+  getMelieById(MelieId: string): Observable<any> {
+    return new GenericService<Meilisearch>(this.http).getById(this.MelieUrl, MelieId);
   }
 
- addMeile(datamelie: any): Observable<any> {
-    return this._HttpClient.post(`${this.Url.baseUrl}${this.Url.meilisearchRoute}`, datamelie);
+  deleteMelie(MelieId: string): Observable<any> {
+    return new GenericService<Meilisearch>(this.http).delete(this.MelieUrl, MelieId);
   }
 
-  updateMelie(datamelie: any): Observable<any> {
-    return this._HttpClient.put(`${this.Url.baseUrl}${this.Url.meilisearchRoute}`, datamelie, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+  addMelie(dataMelie: any): Observable<any> {
+    return new GenericService<Meilisearch>(this.http).add(this.MelieUrl, dataMelie);
   }
 
-  // SignalR methods
-
-  public startConnection(): void {
-    this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('https://meilisync.runasp.net/fast-meili-sync-hub', { withCredentials: false }) 
-      .build();
-
-    this.hubConnection
-      .start()
-      .then(() => console.log('SignalR connection started'))
-      .catch(err => console.log('Error while starting SignalR connection: ' + err));
+  updateMelie(dataMelie: any): Observable<any> {
+    return new GenericService<Meilisearch>(this.http).update(this.MelieUrl, dataMelie);
   }
 
-  // Add a listener for notifications from SignalR
-  public addTransferDataListener(onNotify: (operationType: number, data: any) => void): void {
-    this.hubConnection.on('NotifyMeiliSearchAsync', (operationType, data) => {
-      console.log('Data NotifyMeiliSearchAsync:', data);
-      console.log('operationType NotifyMeiliSearchAsync:', operationType);
-      onNotify(operationType, data); // Pass the data to the provided callback
-    });
-  }
 
-  public stopConnection(): void {
-    if (this.hubConnection) {
-      this.hubConnection.stop().then(() => console.log('SignalR connection stopped'));
-    }
-  }
 }

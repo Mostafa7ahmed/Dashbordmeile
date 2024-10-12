@@ -87,8 +87,8 @@ export class SyncComponent {
     });
   }
 
-  getDataMeliesearch(pageNumber: number = 1) {
-    this._MeilisearchService.getAll(pageNumber).subscribe({
+  getDataMeliesearch(pageNumber: number = 1 , search:string ="") {
+    this._MeilisearchService.getAll(pageNumber, this.pageSize , search).subscribe({
       next: (res) => {
         this.meiliData = res.items;
         this.currentPage = res.currentPage;

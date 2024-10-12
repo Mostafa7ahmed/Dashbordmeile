@@ -1,41 +1,36 @@
 import { HttpClient } from '@angular/common/http';
-import { GlobalAPiService } from './global-api.service';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { GenericService } from './generic.service';
+import { GlobalAPiService } from './global-api.service';
+import { environment } from '../../../Environment/environment';
+import { Source } from '../interface/source';
+
 @Injectable({
   providedIn: 'root'
 })
 export class SourceService {
+  private sourceUrl: string;
 
-  constructor(private Url:GlobalAPiService , private _HttpClient:HttpClient ) { }
-
-
-  getAll(numpage:number=1 ,pageSize:number=10 ):Observable<any>{
-    return this._HttpClient.get(`${this.Url.baseUrl}${this.Url.sourceRoute}/paginate?pageNumber=${numpage}&pageSize=${pageSize}&orderBeforPagination=true`)
+  constructor(private http: HttpClient) {
+    this.sourceUrl = `${environment.baseUrl}${environment.sourceRoute}`;
   }
-  
-  getSourceById(SourceId: string): Observable<any>{
-      return this._HttpClient.get(`${this.Url.baseUrl}${this.Url.sourceRoute}?id=${SourceId}`);
-    
+
+  getAll(numpage: number = 1, pageSize: number = 10 , serch:string=""): Observable<any> {
+    return new GenericService<Source>(this.http).getAll(this.sourceUrl, numpage, pageSize , serch);
   }
-    
-  
+  getSourceById(SourceId: string): Observable<any> {
+    return new GenericService<Source>(this.http).getById(this.sourceUrl, SourceId);
+  }
   deleteSource(SourceId: string): Observable<any> {
-    return this._HttpClient.delete(`${this.Url.baseUrl}${this.Url.sourceRoute}?id=${SourceId}`)
+    return new GenericService<Source>(this.http).delete(this.sourceUrl, SourceId);
   }
 
-  addSource(dataSource:any): Observable<any> {
-    return this._HttpClient.post(`${this.Url.baseUrl}${this.Url.sourceRoute}` , dataSource, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+  addSource(dataSource: any): Observable<any> {
+    return new GenericService<Source>(this.http).add(this.sourceUrl, dataSource);
   }
 
-  updateSource( dataSource: any): Observable<any> {
-    return this._HttpClient.put(`${this.Url.baseUrl}${this.Url.sourceRoute}` , dataSource,{
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-  }}
+  updateSource(dataSource: any): Observable<any> {
+    return new GenericService<Source>(this.http).update(this.sourceUrl, dataSource);
+  }
+}
