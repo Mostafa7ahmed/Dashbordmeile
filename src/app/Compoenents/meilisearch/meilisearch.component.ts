@@ -35,7 +35,7 @@ export class MeilisearchComponent implements OnInit, OnDestroy {
 
   constructor(private _MeilisearchService: MeilisearchService) {}
 
-  getData(pageNumber: number = 1, pageSize: number = 40) {
+  getData(pageNumber: number = 1, pageSize: number = 5) {
     this.unsub = this._MeilisearchService.getAll(pageNumber, pageSize).subscribe({
       next: (res) => {
         console.log(res)
