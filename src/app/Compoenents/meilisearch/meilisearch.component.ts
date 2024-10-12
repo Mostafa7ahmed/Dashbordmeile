@@ -18,7 +18,7 @@ export class MeilisearchComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalPagesArray: number[] = [];
   unsub: any;
-  pageSize = 50;
+  pageSize = 5;
 
   meilForm = new FormGroup({
     label: new FormControl(null, Validators.required),
