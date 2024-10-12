@@ -23,51 +23,90 @@ export class MeilisearchComponent implements OnInit, OnDestroy {
 
   totalPagesArray: number[] = [];
   unsub: any;
-  pageSize = 50;
+  pageSize:number = 5;
+  search :string= '';
+  meilForm = this.createFormGroup();
+  editmelie = this.createEditFormGroup();
 
-  meilForm = new FormGroup({
-    label: new FormControl(null, Validators.required),
-    url: new FormControl(null, Validators.required),
-    apiKey: new FormControl(null, Validators.required),
-  });
+  constructor(private meilisearchService: MeilisearchService, private signalR: SiganlRService) {}
 
-  editmelie = new FormGroup({
-    id: new FormControl(''),
-    label: new FormControl('', Validators.required),
-    url: new FormControl('', Validators.required),
-    apiKey: new FormControl('', Validators.required),
-  });
-
-  constructor(private _MeilisearchService: MeilisearchService) {}
-
-  getData(pageNumber: number = 1, pageSize: number = 40) {
-    this.unsub = this._MeilisearchService.getAll(pageNumber, pageSize).subscribe({
-      next: (res) => {
-        console.log(res)
-        this.meiliData = res.items;
-        this.currentPage = res.currentPage;
-        this.totalPages = res.totalPages;
-        this.totalPagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
-      },
-      error: (err) => {
-        console.error('Error fetching data:', err);
-      },
+  private createFormGroup(): FormGroup {
+    return new FormGroup({
+      label: new FormControl(null, Validators.required),
+      url: new FormControl(null, Validators.required),
+      apiKey: new FormControl(null, Validators.required),
     });
   }
 
-  editMelie(id: string) {
-    this._MeilisearchService.getMeileById(id).subscribe({
-      next: (res) => {
-        this.editmelie = new FormGroup({
-          id: new FormControl(res.result.id),
-          label: new FormControl(res.result.label, Validators.required),
-          url: new FormControl(res.result.url, Validators.required),
-          apiKey: new FormControl(res.result.apiKey, Validators.required),
-        });
-      },
-      error: (err) => {
-        console.error('Error fetching data for edit:', err);
-      },
+  private createEditFormGroup(): FormGroup {
+    return new FormGroup({
+      id: new FormControl(''),
+      label: new FormControl('', Validators.required),
+      url: new FormControl('', Validators.required),
+      apiKey: new FormControl('', Validators.required),
+    });
+  }
+
+  ngOnInit(): void {
+    this.getData();
+    this.setupSignalRConnection();
+  }
+
+  private setupSignalRConnection(): void {
+    this.signalR.startConnection();
+    this.signalR.addListener("NotifyMeiliSearchAsync",(operationType, response) => {
+      this.handleSignalRNotification(operationType, response.result);
+    });
+  }
+
+  private handleSignalRNotification(operationType: number, data: Meilisearch): void {
+    switch (operationType) {
+      case 0: // Add
+        this.meiliData.push(data);
+        break;
+      case 1: // Update
+        const index = this.meiliData.findIndex(item => item.id === data.id);
+        if (index !== -1) {
+          this.meiliData[index] = data;
+        }
+        break;
+      case 2: // Delete
+        this.meiliData = this.meiliData.filter(item => item.id !== data.id);
+        break;
+      default:
+        console.warn('Unknown operation type:', operationType);
+    }
+  }
+
+  getData(page: number = this.currentPage): void {
+    this.unsub = this.meilisearchService.getAll(page, this.pageSize, this.search).subscribe({
+      next: res => this.handleGetDataSuccess(res),
+      error: err => console.error('Error fetching data:', err),
+    });
+  }
+
+  private handleGetDataSuccess(res: { items: Meilisearch[], currentPage: number, totalPages: number , moveNext:boolean, movePrevious:boolean}): void {
+    this.meiliData = res.items;
+    this.currentPage = res.currentPage;
+    this.totalPages = res.totalPages;
+    this.movenext= res.moveNext;
+    this.movePrevious=res.movePrevious
+    this.totalPagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  editMelie(id: string): void {
+    this.meilisearchService.getMelieById(id).subscribe({
+      next: res => this.populateEditForm(res.result),
+      error: err => console.error('Error fetching data for edit:', err),
+    });
+  }
+
+  private populateEditForm(data: Meilisearch): void {
+    this.editmelie.setValue({
+      id: data.id,
+      label: data.label,
+      url: data.url,
+      apiKey: data.apiKey,
     });
   }
 
