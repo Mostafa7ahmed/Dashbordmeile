@@ -1,13 +1,19 @@
 import { Routes } from '@angular/router';
 import { SyncComponent } from './Compoenents/sync/sync.component';
-import { MeilisearchComponent } from './Compoenents/meilisearch/meilisearch.component';
 import { SourceComponent } from './Compoenents/source/source.component';
+import { LoginComponent } from './Compoenents/login/login.component';
+import { ControllersComponent } from './Compoenents/controllers/controllers.component';
 
 export const routes: Routes = [
-    {path:'meilisearch' , component:MeilisearchComponent },
-    {path:'source' , component:SourceComponent},
+  { path: 'login', component: LoginComponent },
+  {
+    path: '',
+    component:ControllersComponent,
+    children: [
+      { path: 'meilisearch',loadComponent:()=>import("./Compoenents/meilisearch/meilisearch.component").then(c => c.MeilisearchComponent) },
+      { path: 'source', component: SourceComponent },
 
-    {path:'sync' , component:SyncComponent},
-
-
+      { path: 'sync', component: SyncComponent },
+    ],
+  },
 ];

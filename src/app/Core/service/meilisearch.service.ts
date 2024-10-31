@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { GlobalAPiService } from './global-api.service';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import * as signalR from '@microsoft/signalr';
 import { GenericService } from './generic.service';
 import { environment } from '../../../Environment/environment';
 import { Meilisearch } from '../interface/meilisearch';
@@ -11,7 +10,6 @@ import { Meilisearch } from '../interface/meilisearch';
   providedIn: 'root'
 })
 export class MeilisearchService {
-  private hubConnection!: signalR.HubConnection;
 
   private MelieUrl: string;
 

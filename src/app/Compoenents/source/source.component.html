@@ -1,131 +1,134 @@
 <div class="container">
   <div class="mt-5 d-flex align-content-center justify-content-between w-100">
     <div class="inputs">
-    <input 
-        type="text" 
-        [(ngModel)]="search" 
-        (input)="searchMeili()" 
-        placeholder="Search..." 
+      <input
+        type="text"
+        [(ngModel)]="search"
+        (input)="searchMeili()"
+        placeholder="Search..."
       />    </div>
 
-    <div class="add">
-      <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#addSourceModal">
-        Add
-      </button>
+      <div class="add">
+        <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#addSourceModal">
+          Add
+        </button>
+      </div>
+    </div>
+
+    <div class="dataShow mt-5">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>URL</th>
+            <th>database</th>
+
+            <th>Created On</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of meiliData; track item; let i = $index) {
+            <tr>
+              <td>{{ item.label }}</td>
+              <td>{{ item.url }}</td>
+              <td>{{ item.database }}</td>
+              <td>{{ item.createdOn | date: 'yyyy-MM-dd' }}</td>
+              <td>
+                <button class="btn" (click)="editSource(item.id)"  data-bs-toggle="modal" data-bs-target="#editSource">
+                  <i class="fa-solid fa-pen-to-square mx-5"></i>
+                </button>
+                <button class="btn" (click)="deleteMeili(item.id)">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Pagination controls -->
+      <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" [class.disabled]="!movePrevious">
+            <button class="page-link" (click)="changePage(currentPage - 1)" [disabled]="!movePrevious">Previous</button>
+          </li>
+          @for (page of totalPagesArray; track page) {
+            <li class="page-item">
+              <button class="page-link" (click)="changePage(page)" [class.active]="currentPage === page">{{ page }}</button>
+            </li>
+          }
+          <li class="page-item" [class.disabled]="!movenext">
+            <button class="page-link" (click)="changePage(currentPage + 1)" [disabled]="!movenext">Next</button>
+          </li>
+        </ul>
+      </nav>
     </div>
   </div>
 
-  <div class="dataShow mt-5">
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>Label</th>
-          <th>URL</th>
-          <th>database</th>
-
-          <th>Created On</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of meiliData; let i = index">
-          <td>{{ item.label }}</td>
-          <td>{{ item.url }}</td>
-          <td>{{ item.database }}</td>
-
-          <td>{{ item.createdOn | date: 'yyyy-MM-dd' }}</td>
-          <td>
-            <button class="btn" (click)="editSource(item.id)"  data-bs-toggle="modal" data-bs-target="#editSource">
-              <i class="fa-solid fa-pen-to-square mx-5"></i>
-            </button>
-            <button class="btn" (click)="deleteMeili(item.id)">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Pagination controls -->
-    <nav aria-label="Page navigation example">
-      <ul class="pagination justify-content-center">
-        <li class="page-item" [class.disabled]="!movePrevious">
-          <button class="page-link" (click)="changePage(currentPage - 1)" [disabled]="!movePrevious">Previous</button>
-        </li>
-        <li class="page-item" *ngFor="let page of totalPagesArray">
-          <button class="page-link" (click)="changePage(page)" [class.active]="currentPage === page">{{ page }}</button>
-        </li>
-        <li class="page-item" [class.disabled]="!movenext">
-          <button class="page-link" (click)="changePage(currentPage + 1)" [disabled]="!movenext">Next</button>
-        </li>
-      </ul>
-    </nav>
-  </div>
-</div>
-
-<!-- Modal for Adding -->
-<div class="modal fade" id="addSourceModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="addModalLabel">Add Source</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form (ngSubmit)="addSource(sourceForm)" [formGroup]="sourceForm">
-          <div class="mb-3">
-            <label for="label" class="col-form-label">Label</label>
-            <input type="text" class="form-control" formControlName="label" placeholder="Enter label" id="label">
-          </div>
-          <div class="mb-3">
-            <label for="url" class="col-form-label">URL</label>
-            <input type="text" class="form-control" formControlName="url" placeholder="Enter URL" id="url">
-          </div>
-          <div class="mb-3">
-            <label for="url" class="col-form-label">database</label>
-            <input type="text" class="form-control" formControlName="database" placeholder="Enter database" id="database">
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Add Source</button>
-          </div>
-        </form>
+  <!-- Modal for Adding -->
+  <div class="modal fade" id="addSourceModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="addModalLabel">Add Source</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="addSource(sourceForm)" [formGroup]="sourceForm">
+            <div class="mb-3">
+              <label for="label" class="col-form-label">Label</label>
+              <input type="text" class="form-control" formControlName="label" placeholder="Enter label" id="label">
+            </div>
+            <div class="mb-3">
+              <label for="url" class="col-form-label">URL</label>
+              <input type="text" class="form-control" formControlName="url" placeholder="Enter URL" id="url">
+            </div>
+            <div class="mb-3">
+              <label for="url" class="col-form-label">database</label>
+              <input type="text" class="form-control" formControlName="database" placeholder="Enter database" id="database">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Add Source</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal for Editing -->
+  <!-- Modal for Editing -->
 
 
-<div class="modal fade" id="editSource" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel2">Edit MeiliSearch</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form (ngSubmit)="updateSource()" [formGroup]="editsource">
-          <div class="mb-3">
-            <label for="label" class="col-form-label">Label</label>
-            <input type="text" class="form-control" formControlName="label" placeholder="Enter label" id="label">
-          </div>
-          <div class="mb-3">
-            <label for="url" class="col-form-label">URL</label>
-            <input type="text" class="form-control" formControlName="url" placeholder="Enter URL" id="url">
-          </div>
-          <div class="mb-3">
-            <label for="url" class="col-form-label">database</label>
-            <input type="text" class="form-control" formControlName="database" placeholder="Enter database" id="database">
-          </div>
-   
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Update Meili</button>
-          </div>
-        </form>
+  <div class="modal fade" id="editSource" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel2">Edit MeiliSearch</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="updateSource()" [formGroup]="editsource">
+            <div class="mb-3">
+              <label for="label" class="col-form-label">Label</label>
+              <input type="text" class="form-control" formControlName="label" placeholder="Enter label" id="label">
+            </div>
+            <div class="mb-3">
+              <label for="url" class="col-form-label">URL</label>
+              <input type="text" class="form-control" formControlName="url" placeholder="Enter URL" id="url">
+            </div>
+            <div class="mb-3">
+              <label for="url" class="col-form-label">database</label>
+              <input type="text" class="form-control" formControlName="database" placeholder="Enter database" id="database">
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Update Meili</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>

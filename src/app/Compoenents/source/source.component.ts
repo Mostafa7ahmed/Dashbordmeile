@@ -72,7 +72,7 @@ export class SourceComponent implements OnInit {
   // Edit source
   editSource(id: string): void {
     this._sourceService.getSourceById(id).subscribe({
-      next: (res) => this.populateEditSourceForm(res.result),
+      next: (res) => console.log(res),
       error: (err) => console.error('Error fetching data for edit:', err),
     });
   }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { MeilisearchService } from './../../Core/service/meilisearch.service';
+import { MeilisearchService } from '../../Core/service/meilisearch.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Meilisearch } from '../../Core/interface/meilisearch';
